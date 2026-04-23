@@ -1,0 +1,128 @@
+{
+  "project_name": "Enamels Inventory & Production Tracking",
+  "theme": "Light",
+  "archetype": "Archetype 4: Swiss & High-Contrast (Industrial/Technical Variant)",
+  "rationale": "For a factory-floor mobile web app, we need extreme clarity, tactile functional surfaces, and high-contrast status indicators. The UI avoids soft consumer-app fluff (heavy shadows, large radii) in favor of crisp borders, dense data typography, and stark 'control room' contrast that reads perfectly under harsh factory lighting.",
+  "colors": {
+    "background": {
+      "app": "#F7F7F5",
+      "surface": "#FFFFFF",
+      "nav": "#FFFFFF",
+      "overlay": "rgba(17, 24, 39, 0.4)"
+    },
+    "text": {
+      "primary": "#111827",
+      "secondary": "#4B5563",
+      "tertiary": "#9CA3AF",
+      "inverted": "#FFFFFF"
+    },
+    "border": {
+      "default": "#E5E7EB",
+      "strong": "#111827",
+      "focus": "#EA580C"
+    },
+    "brand": {
+      "primary": "#111827",
+      "accent": "#EA580C",
+      "accent_hover": "#C2410C"
+    },
+    "status_stages": {
+      "Order Received": { "bg": "bg-slate-100", "text": "text-slate-700", "border": "border-slate-300", "dot": "bg-slate-500" },
+      "Material Assigned": { "bg": "bg-blue-100", "text": "text-blue-700", "border": "border-blue-300", "dot": "bg-blue-500" },
+      "Cutting/Preparation": { "bg": "bg-indigo-100", "text": "text-indigo-700", "border": "border-indigo-300", "dot": "bg-indigo-500" },
+      "Stitching": { "bg": "bg-amber-100", "text": "text-amber-800", "border": "border-amber-300", "dot": "bg-amber-500" },
+      "Quality Check": { "bg": "bg-orange-100", "text": "text-orange-700", "border": "border-orange-300", "dot": "bg-orange-500" },
+      "Packaging": { "bg": "bg-pink-100", "text": "text-pink-700", "border": "border-pink-300", "dot": "bg-pink-500" },
+      "Ready/Dispatched": { "bg": "bg-emerald-100", "text": "text-emerald-700", "border": "border-emerald-400", "dot": "bg-emerald-500" }
+    }
+  },
+  "typography": {
+    "fonts": {
+      "heading": "'Manrope', sans-serif",
+      "body": "'Inter', sans-serif",
+      "mono": "'JetBrains Mono', monospace"
+    },
+    "hierarchy": {
+      "h1": "text-3xl font-black tracking-tighter text-gray-900",
+      "h2": "text-2xl font-extrabold tracking-tight text-gray-900",
+      "h3": "text-lg font-bold tracking-tight text-gray-900",
+      "body": "text-base font-medium text-gray-700 leading-snug",
+      "small": "text-sm font-medium text-gray-500",
+      "mono_label": "font-mono text-xs font-bold tracking-[0.05em] uppercase text-gray-500"
+    }
+  },
+  "spacing_and_layout": {
+    "app_container": "max-w-md mx-auto min-h-screen bg-[#F7F7F5] relative shadow-2xl overflow-x-hidden pb-20",
+    "section_padding": "p-4 sm:p-6",
+    "gap": "gap-4 sm:gap-6",
+    "border_radius": "rounded-sm",
+    "cards": "bg-white border border-gray-200 rounded-sm shadow-sm",
+    "grid_bento": "grid grid-cols-2 gap-3"
+  },
+  "components": {
+    "bottom_navigation": {
+      "container": "fixed bottom-0 w-full max-w-md mx-auto bg-white border-t border-gray-200 pb-safe pt-2 px-6 flex justify-between items-center z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]",
+      "item": "flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-gray-900 transition-colors",
+      "item_active": "text-gray-900",
+      "fab": "absolute -top-6 left-1/2 -translate-x-1/2 w-14 h-14 bg-orange-600 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-[#F7F7F5] hover:bg-orange-700 transition-transform active:scale-95"
+    },
+    "timeline": {
+      "container": "flex flex-col relative pl-6 py-2",
+      "stem": "absolute left-[11px] top-4 bottom-4 w-[2px] bg-gray-200",
+      "node_past": "absolute -left-6 top-1 w-3 h-3 bg-gray-900 rounded-none border-2 border-white outline outline-1 outline-gray-900",
+      "node_active": "absolute -left-6 top-1 w-3 h-3 bg-orange-600 rounded-none border-2 border-white outline outline-1 outline-orange-600 animate-pulse",
+      "node_future": "absolute -left-6 top-1 w-3 h-3 bg-white rounded-none border border-gray-300",
+      "item_container": "mb-8 relative",
+      "timestamp": "font-mono text-[10px] text-gray-400 mt-1"
+    },
+    "buttons": {
+      "primary": "w-full bg-gray-900 text-white font-bold h-12 rounded-sm flex items-center justify-center hover:bg-gray-800 transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-orange-600",
+      "secondary": "w-full bg-white text-gray-900 border border-gray-300 font-bold h-12 rounded-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+    },
+    "inputs": {
+      "default": "w-full h-12 bg-white border border-gray-300 rounded-sm px-4 text-base focus:border-gray-900 focus:ring-1 focus:ring-gray-900 transition-colors outline-none",
+      "label": "block font-mono text-xs font-bold text-gray-700 mb-1.5 uppercase"
+    },
+    "stage_chip": {
+      "base": "inline-flex items-center px-2.5 py-1 text-xs font-bold border rounded-none uppercase tracking-wide",
+      "usage": "Dynamically apply colors from status_stages based on the product's current stage."
+    }
+  },
+  "media_assets": {
+    "login_background": {
+      "url": "https://images.unsplash.com/photo-1759310348050-e64fead4f21a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYWJzdHJhY3QlMjB0ZXh0dXJlJTIwYmFja2dyb3VuZHxlbnwwfHx8fDE3NzY4NjcyOTF8MA&ixlib=rb-4.1.0&q=85",
+      "description": "Industrial abstract texture used for the login screen background overlay (reduced opacity)."
+    },
+    "product_placeholder": {
+      "url": "https://images.unsplash.com/photo-1640951916518-20c735fae3a2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwyfHxlbmFtZWx3YXJlJTIwbXVnJTIwYm93bCUyMHByb2R1Y3R8ZW58MHx8fHwxNzc2ODY3Mjc4fDA&ixlib=rb-4.1.0&q=85",
+      "description": "Enamelware mug photo to be used as a thumbnail for products in the list view."
+    },
+    "user_avatar": {
+      "url": "https://images.unsplash.com/photo-1742281694796-36a9ae24b59a?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBmYWN0b3J5JTIwd29ya2VyJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzc2ODY3MjkxfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Portrait of a factory supervisor for the profile screen avatar."
+    }
+  },
+  "motion_and_interactions": {
+    "hover_states": "All list items MUST slightly darken the border (`hover:border-gray-400`) and use a subtle `-translate-y-[1px]` transform.",
+    "active_states": "Buttons and list items MUST scale down (`active:scale-[0.98]`) on tap to simulate physical button presses.",
+    "page_transitions": "Use Framer Motion. Pages should slide in slightly from the right and fade in (`initial={{opacity:0, x:10}} animate={{opacity:1, x:0}}`)."
+  },
+  "iconography": {
+    "library": "lucide-react",
+    "style": "Use uniform 24px size for bottom nav, 16px for inline data. Stroke width 2px for solid, industrial feel."
+  },
+  "accessibility_and_testing": {
+    "contrast": "All text strictly passes WCAG AA. Backgrounds are off-white to reduce eye strain under factory fluorescent lights.",
+    "test_ids": "Every interactive element (buttons, tabs, inputs, stage chips, timeline items) MUST have a `data-testid` (e.g., `data-testid=\"btn-login\"`, `data-testid=\"tab-dashboard\"`)."
+  },
+  "instructions_to_main_agent": [
+    "1. Setup the layout to mimic a mobile app: use `max-w-md mx-auto min-h-screen` wrapped in a gray outer background so it looks like a phone screen on desktop.",
+    "2. Implement bottom navigation using the `bottom_navigation` styles. The 'Create Product' button should be a floating action button (FAB) overlapping the tab bar.",
+    "3. Use `Manrope` for all headings and `JetBrains Mono` for batch numbers, product IDs, and timestamps. Use `Inter` for regular body text.",
+    "4. For the Timeline component in Product Details, do NOT use default Shadcn stepper. Implement the custom strict vertical line with square nodes defined in `timeline` section. It should look like an industrial routing slip.",
+    "5. Stage Chips must use the exact colors provided in `status_stages`. No generic colors. Ensure borders are square `rounded-none`.",
+    "6. Build the Dashboard with a top stats bento grid (e.g., Total Active, Needs QC) using the `grid_bento` layout, followed by the searchable list of products.",
+    "7. Incorporate a mock API or FastAPI backend to handle the JWT login and product stage progression.",
+    "8. Use the `media_assets` URLs for the login background (with an overlay), product thumbnails, and profile avatar."
+  ]
+}
