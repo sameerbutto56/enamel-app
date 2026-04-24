@@ -67,6 +67,19 @@ export default function CartScreen() {
               
               <Text style={styles.variant}>{item.variant_label || 'Standard Fit'}</Text>
               
+              {item.customizations && (
+                <View style={styles.customizationsContainer}>
+                  {item.customizations.fitting && <Text style={styles.customText}>• {item.customizations.fitting}</Text>}
+                  {item.customizations.custom_color && <Text style={styles.customText}>• Color: {item.customizations.custom_color}</Text>}
+                  {item.customizations.name_on_shirt && (
+                    <Text style={styles.customText}>• Name: {item.customizations.name_on_shirt} ({item.customizations.name_placement})</Text>
+                  )}
+                  {item.customizations.logo && (
+                    <Text style={styles.customText}>• Logo: {item.customizations.logo} ({item.customizations.logo_placement})</Text>
+                  )}
+                </View>
+              )}
+              
               <View style={styles.itemFooter}>
                 <Text style={styles.itemPrice}>Rs. {item.unit_price.toLocaleString()}</Text>
                 <View style={styles.quantity}>
@@ -215,6 +228,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text.tertiary,
     marginTop: 2,
+  },
+  customizationsContainer: {
+    marginTop: 4,
+    backgroundColor: '#F3F4F6',
+    padding: 6,
+    borderRadius: 6,
+  },
+  customText: {
+    fontSize: 10,
+    color: COLORS.text.secondary,
+    fontWeight: '500',
   },
   itemFooter: {
     flexDirection: 'row',

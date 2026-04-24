@@ -6,6 +6,7 @@ import { catalogApi } from '../../src/api';
 import { useCartStore, useAuthStore } from '../../src/store';
 import { COLORS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '../../src/theme';
 import Button from '../../src/components/Button';
+import Input from '../../src/components/Input';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -14,21 +15,35 @@ export default function ProductDetailScreen() {
   const addItem = useCartStore((state) => state.addItem);
   
   const [product, setProduct] = useState<any>(null);
+  const [logos, setLogos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
   const [adding, setAdding] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Customizations
+  const [nameOnShirt, setNameOnShirt] = useState('');
+  const [namePlacement, setNamePlacement] = useState('Right Chest');
+  const [logoOption, setLogoOption] = useState<string>('none');
+  const [selectedLogoId, setSelectedLogoId] = useState<string | null>(null);
+  const [logoPlacement, setLogoPlacement] = useState('Left Chest');
+  const [fitting, setFitting] = useState<string>('Regular Fit');
+  const [customColor, setCustomColor] = useState('');
+
   const scrollX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    async function fetchProduct() {
+    async function fetchData() {
       try {
-        const res = await catalogApi.getProduct(id);
-        setProduct(res.data);
-        if (res.data.variants?.length > 0) {
-          setSelectedVariant(res.data.variants[0]);
+        const [prodRes, logoRes] = await Promise.all([
+          catalogApi.getProduct(id),
+          catalogApi.getLogos()
+        ]);
+        setProduct(prodRes.data);
+        setLogos(logoRes.data);
+        if (prodRes.data.variants?.length > 0) {
+          setSelectedVariant(prodRes.data.variants[0]);
         }
       } catch (err) {
         console.error(err);
@@ -36,7 +51,7 @@ export default function ProductDetailScreen() {
         setLoading(false);
       }
     }
-    fetchProduct();
+    fetchData();
   }, [id]);
 
   const handleAddToCart = async () => {
@@ -53,6 +68,15 @@ export default function ProductDetailScreen() {
         product_id: product.id,
         variant_id: selectedVariant?.id,
         quantity: 1,
+        customizations: {
+          name_on_shirt: nameOnShirt || null,
+          name_placement: nameOnShirt ? namePlacement : null,
+          logo: logoOption === 'none' ? null : 
+                logoOption === 'standard_medical' ? (logos.find(l => l.id === selectedLogoId)?.name || 'Standard Cross') : 'Custom Upload',
+          logo_placement: logoOption !== 'none' ? logoPlacement : null,
+          fitting: fitting,
+          custom_color: customColor || null
+        }
       });
       router.push('/(tabs)/cart');
     } catch (err) {
@@ -93,7 +117,9 @@ export default function ProductDetailScreen() {
   }
 
   const media = product.images?.length > 0 ? product.images : [{ url: 'https://via.placeholder.com/600', type: 'image' }];
-  const price = selectedVariant?.price_override || product.price;
+  let price = selectedVariant?.price_override || product.price;
+  if (nameOnShirt) price += 500;
+  if (logoOption !== 'none') price += 1000;
 
   return (
     <View style={styles.screen}>
@@ -207,6 +233,115 @@ export default function ProductDetailScreen() {
               </View>
             </View>
           )}
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Customizations (Optional)</Text>
+            
+            <Text style={styles.customLabel}>Fitting Style</Text>
+            <View style={styles.fittingGrid}>
+              {['Slim Fit', 'Regular Fit', 'Relaxed'].map((fit) => (
+                <TouchableOpacity
+                  key={fit}
+                  onPress={() => setFitting(fit)}
+                  style={[styles.fitOption, fitting === fit && styles.fitActive]}
+                >
+                  <Text style={[styles.fitText, fitting === fit && styles.fitTextActive]}>{fit}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.customLabel}>Custom Color Option</Text>
+            <Input 
+              value={customColor} 
+              onChangeText={setCustomColor} 
+              placeholder="e.g. Navy Blue, Maroon (Leave empty for standard)" 
+            />
+
+            <Text style={styles.customLabel}>Name on Shirt (+ Rs. 500)</Text>
+            <Input 
+              value={nameOnShirt} 
+              onChangeText={setNameOnShirt} 
+              placeholder="e.g. Dr. Sameer" 
+            />
+            {nameOnShirt.length > 0 && (
+              <>
+                <Text style={styles.customLabel}>Name Placement</Text>
+                <View style={styles.fittingGrid}>
+                  {['Right Chest', 'Left Chest', 'Left Sleeve', 'Right Sleeve'].map((pos) => (
+                    <TouchableOpacity
+                      key={pos}
+                      onPress={() => setNamePlacement(pos)}
+                      style={[styles.fitOption, namePlacement === pos && styles.fitActive]}
+                    >
+                      <Text style={[styles.fitText, namePlacement === pos && styles.fitTextActive]}>{pos}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+
+            <Text style={styles.customLabel}>Add Hospital Logo (+ Rs. 1000)</Text>
+            <View style={styles.fittingGrid}>
+              {['none', 'standard_medical', 'custom_upload'].map((opt) => (
+                <TouchableOpacity
+                  key={opt}
+                  onPress={() => setLogoOption(opt)}
+                  style={[styles.fitOption, logoOption === opt && styles.fitActive]}
+                >
+                  <Text style={[styles.fitText, logoOption === opt && styles.fitTextActive]}>
+                    {opt === 'none' ? 'No Logo' : opt === 'standard_medical' ? 'Standard Logo' : 'Custom Upload'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            {logoOption === 'standard_medical' && logos.length > 0 && (
+              <View style={{ marginTop: 12 }}>
+                <Text style={[styles.customLabel, { fontSize: 12 }]}>Select a Logo</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+                  {logos.map(logo => (
+                    <TouchableOpacity 
+                      key={logo.id}
+                      onPress={() => setSelectedLogoId(logo.id)}
+                      style={[
+                        { width: 80, height: 80, marginRight: 12, borderRadius: 8, borderWidth: 2, borderColor: '#eee', padding: 8, alignItems: 'center', justifyContent: 'center' },
+                        selectedLogoId === logo.id && { borderColor: COLORS.brand.primary, backgroundColor: COLORS.brand.primary + '10' }
+                      ]}
+                    >
+                      <Image source={{ uri: logo.image_url }} style={{ width: 60, height: 60, resizeMode: 'contain' }} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                {selectedLogoId && (
+                  <Text style={{ fontSize: 12, fontWeight: 'bold', color: COLORS.text.primary, marginTop: 8 }}>
+                    Selected: {logos.find(l => l.id === selectedLogoId)?.name}
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {logoOption === 'custom_upload' && (
+              <Text style={{ fontSize: 12, color: COLORS.text.secondary, marginTop: 4 }}>
+                * Our team will contact you for the logo design file after your order is placed.
+              </Text>
+            )}
+            {logoOption !== 'none' && (
+              <>
+                <Text style={styles.customLabel}>Logo Placement</Text>
+                <View style={styles.fittingGrid}>
+                  {['Left Chest', 'Right Chest', 'Left Sleeve', 'Right Sleeve'].map((pos) => (
+                    <TouchableOpacity
+                      key={pos}
+                      onPress={() => setLogoPlacement(pos)}
+                      style={[styles.fitOption, logoPlacement === pos && styles.fitActive]}
+                    >
+                      <Text style={[styles.fitText, logoPlacement === pos && styles.fitTextActive]}>{pos}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+          </View>
 
           <View style={styles.infoGrid}>
             <View style={styles.infoItem}>
@@ -414,6 +549,39 @@ const styles = StyleSheet.create({
     color: COLORS.text.primary,
   },
   variantTextActive: {
+    color: COLORS.brand.primary,
+  },
+  customLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.text.primary,
+    marginTop: SPACING.md,
+    marginBottom: 8,
+  },
+  fittingGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: SPACING.sm,
+  },
+  fitOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#EEEEEE',
+    backgroundColor: '#F9FAFB',
+  },
+  fitActive: {
+    borderColor: COLORS.brand.primary,
+    backgroundColor: COLORS.brand.primary + '10',
+  },
+  fitText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.text.primary,
+  },
+  fitTextActive: {
     color: COLORS.brand.primary,
   },
   infoGrid: {

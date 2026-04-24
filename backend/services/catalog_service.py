@@ -40,6 +40,29 @@ async def get_category_by_id(category_id: str) -> dict:
     return doc
 
 
+# ── Logos ───────────────────────────────────────────────────
+
+async def create_logo(data: dict) -> dict:
+    db = get_db()
+    from models.logo import Logo
+    logo = Logo(**data)
+    doc = logo.model_dump()
+    await db.logos.insert_one(doc)
+    return doc
+
+async def list_logos() -> List[dict]:
+    db = get_db()
+    cursor = db.logos.find({"is_active": True}, {"_id": 0}).sort("created_at", -1)
+    return await cursor.to_list(length=100)
+
+async def delete_logo(logo_id: str) -> bool:
+    db = get_db()
+    result = await db.logos.delete_one({"id": logo_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Logo not found")
+    return True
+
+
 # ── Products ────────────────────────────────────────────────
 
 async def create_catalog_product(data: CatalogProductCreate, user_email: str) -> dict:

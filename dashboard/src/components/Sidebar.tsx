@@ -12,7 +12,8 @@ import {
   Users, 
   LogOut,
   ChevronRight,
-  RotateCcw
+  RotateCcw,
+  Image
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/lib/store';
@@ -20,6 +21,7 @@ import { useAuthStore } from '@/lib/store';
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/' },
   { icon: Package, label: 'Inventory', href: '/inventory' },
+  { icon: Image, label: 'Logos', href: '/logos' },
   { icon: ShoppingCart, label: 'Orders', href: '/orders' },
   { icon: RotateCcw, label: 'Returns', href: '/returns' },
   { icon: Monitor, label: 'POS Terminal', href: '/pos' },

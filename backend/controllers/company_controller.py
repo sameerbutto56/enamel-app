@@ -58,6 +58,21 @@ async def list_categories(_: dict = Depends(require_admin)):
     return await catalog_service.list_categories()
 
 
+# ── Logos ───────────────────────────────────────────────────
+
+@router.get("/logos")
+async def list_logos_company(_: dict = Depends(require_admin)):
+    return await catalog_service.list_logos()
+
+@router.post("/logos")
+async def create_logo(body: dict, _: dict = Depends(require_admin)):
+    return await catalog_service.create_logo(body)
+
+@router.delete("/logos/{logo_id}")
+async def delete_logo(logo_id: str, _: dict = Depends(require_admin)):
+    return await catalog_service.delete_logo(logo_id)
+
+
 # ── Orders ──────────────────────────────────────────────────
 
 @router.get("/orders")

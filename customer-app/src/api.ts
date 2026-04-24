@@ -38,6 +38,7 @@ export const catalogApi = {
   getCategories: () => api.get('/catalog/categories'),
   getProducts: (params?: any) => api.get('/catalog/products', { params }),
   getProduct: (id: string) => api.get(`/catalog/products/${id}`),
+  getLogos: () => api.get('/catalog/logos'),
 };
 
 export const cartApi = {

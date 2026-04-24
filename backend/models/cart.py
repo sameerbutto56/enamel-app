@@ -8,6 +8,7 @@ class CartItemAdd(BaseModel):
     product_id: str
     variant_id: Optional[str] = None
     quantity: int = Field(default=1, ge=1, le=99)
+    customizations: Optional[dict] = None
 
 
 class CartItemUpdate(BaseModel):
@@ -24,6 +25,7 @@ class CartItem(BaseModel):
     product_image: Optional[str] = None
     unit_price: float = 0.0
     variant_label: Optional[str] = None  # e.g. "Large / Red"
+    customizations: Optional[dict] = None
     added_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

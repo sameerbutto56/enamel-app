@@ -75,7 +75,21 @@ export default function OrderTrackingScreen() {
     { status: 'delivered', label: 'Delivered', icon: CheckCircle },
   ];
 
-  const currentStatusIndex = steps.findIndex(s => s.status === order.status);
+  const getSimplifiedStatus = (status: string) => {
+    switch (status) {
+      case 'online_order': case 'shop_order': return 'placed';
+      case 'advance_pending': case 'advance_received': return 'confirmed';
+      case 'name_logo_design': case 'custom_logo_approval': case 'cutting_stitching': case 'quality_control': case 'press_pack': return 'processing';
+      case 'ready_to_dispatch': case 'dispatched': return 'shipped';
+      case 'delivered': return 'delivered';
+      case 'cancelled': return 'cancelled';
+      case 'returned': return 'returned';
+      default: return 'placed';
+    }
+  };
+
+  const currentSimpleStatus = getSimplifiedStatus(order.status);
+  const currentStatusIndex = steps.findIndex(s => s.status === currentSimpleStatus);
 
   return (
     <View style={styles.container}>
@@ -136,11 +150,15 @@ export default function OrderTrackingScreen() {
                   {isCurrent && (
                     <Text style={TYPOGRAPHY.small}>We are currently preparing your order.</Text>
                   )}
-                  {order.status_history?.find((h: any) => h.status === step.status) && (
-                    <Text style={styles.timestamp}>
-                      {new Date(order.status_history.find((h: any) => h.status === step.status).changed_at).toLocaleString()}
-                    </Text>
-                  )}
+                  {(() => {
+                    const mappedHistory = order.status_history?.filter((h: any) => getSimplifiedStatus(h.status) === step.status);
+                    const lastEntry = mappedHistory && mappedHistory.length > 0 ? mappedHistory[mappedHistory.length - 1] : null;
+                    return lastEntry ? (
+                      <Text style={styles.timestamp}>
+                        {new Date(lastEntry.changed_at).toLocaleString()}
+                      </Text>
+                    ) : null;
+                  })()}
                 </View>
               </View>
             );

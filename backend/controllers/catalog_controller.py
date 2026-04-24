@@ -11,6 +11,11 @@ async def list_categories():
     return await catalog_service.list_categories()
 
 
+@router.get("/logos")
+async def list_logos():
+    return await catalog_service.list_logos()
+
+
 @router.get("/products")
 async def list_products(
     search: Optional[str] = Query(None),

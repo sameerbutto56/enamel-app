@@ -25,6 +25,7 @@ export default function InventoryPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -45,8 +46,12 @@ export default function InventoryPage() {
     if (authLoading || !token) return;
     setLoading(true);
     try {
-      const res = await companyApi.getProducts();
-      setProducts(res.data.items);
+      const [resProd, resCat] = await Promise.all([
+        companyApi.getProducts(),
+        companyApi.getCategories()
+      ]);
+      setProducts(resProd.data.items);
+      setCategories(resCat.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -178,13 +183,15 @@ export default function InventoryPage() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'draft'>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
   
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
                          p.sku.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filterStatus === 'all' ? true : 
                          filterStatus === 'active' ? p.is_active : !p.is_active;
-    return matchesSearch && matchesStatus;
+    const matchesCategory = filterCategory === 'all' ? true : p.category_id === filterCategory;
+    return matchesSearch && matchesStatus && matchesCategory;
   });
 
   return (
@@ -288,6 +295,19 @@ export default function InventoryPage() {
                     placeholder="Navy Blue Scrubs"
                   />
                 </div>
+                <div>
+                  <label className="block font-mono text-[10px] font-bold text-gray-700 uppercase mb-1.5 tracking-widest">Category</label>
+                  <select
+                    value={formData.category_id}
+                    onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                    className="w-full h-12 bg-gray-50 border border-gray-300 px-4 focus:border-black outline-none transition-all uppercase text-xs font-bold"
+                  >
+                    <option value="">Select Category</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block font-mono text-[10px] font-bold text-gray-700 uppercase mb-1.5 tracking-widest">SKU</label>
@@ -387,6 +407,31 @@ export default function InventoryPage() {
                         )}
                       >
                         {status}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3 mt-4 border-t border-gray-100 pt-3">Filter by Category</p>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => { setFilterCategory('all'); setShowFilters(false); }}
+                      className={cn(
+                        "w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors",
+                        filterCategory === 'all' ? "bg-black text-white" : "hover:bg-gray-100"
+                      )}
+                    >
+                      All Categories
+                    </button>
+                    {categories.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => { setFilterCategory(cat.id); setShowFilters(false); }}
+                        className={cn(
+                          "w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors",
+                          filterCategory === cat.id ? "bg-black text-white" : "hover:bg-gray-100"
+                        )}
+                      >
+                        {cat.name}
                       </button>
                     ))}
                   </div>

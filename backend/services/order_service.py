@@ -37,6 +37,7 @@ async def place_order(customer_id: str, data: OrderCreate) -> dict:
             product_image=ci.get("product_image"),
             variant_label=ci.get("variant_label"),
             unit_price=price, quantity=qty, line_total=line,
+            customizations=ci.get("customizations"),
         ))
         # Deduct stock
         await db.catalog.update_one({"id": ci["product_id"]}, {"$inc": {"stock_qty": -qty, "total_sold": qty}})
@@ -52,12 +53,14 @@ async def place_order(customer_id: str, data: OrderCreate) -> dict:
         items=[oi.model_dump() for oi in order_items],
         shipping_address=data.shipping_address.model_dump(),
         subtotal=round(subtotal, 2),
-        total=round(subtotal, 2),
-        status=OrderStatus.PLACED,
-        status_history=[OrderStatusEntry(status=OrderStatus.PLACED, changed_by="customer", changed_at=now).model_dump()],
+        shipping_fee=1500.0 if data.appointment else 0.0,
+        total=round(subtotal + (1500.0 if data.appointment else 0.0), 2),
+        status=OrderStatus.ONLINE_ORDER,
+        status_history=[OrderStatusEntry(status=OrderStatus.ONLINE_ORDER, changed_by="customer", changed_at=now).model_dump()],
         payment_method=data.payment_method,
         payment_status="pending",
         note=data.note,
+        appointment=data.appointment,
         created_at=now, updated_at=now,
     )
     await db.orders.insert_one(order.model_dump())
@@ -134,12 +137,16 @@ async def update_order_status(order_id: str, data: OrderStatusUpdate, user_email
     order = await db.orders.find_one({"id": order_id})
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
-    if order["status"] == data.status.value:
-        raise HTTPException(status_code=400, detail="Already at this status")
 
     now = datetime.now(timezone.utc)
     entry = OrderStatusEntry(status=data.status, note=data.note, changed_by=user_email, changed_at=now).model_dump()
     update = {"status": data.status.value, "updated_at": now}
+    
+    if data.dispatch_method:
+        update["dispatch_method"] = data.dispatch_method.value
+    if data.cancellation_remark:
+        update["cancellation_remark"] = data.cancellation_remark
+
     if data.status == OrderStatus.DELIVERED:
         update["payment_status"] = "paid"
 

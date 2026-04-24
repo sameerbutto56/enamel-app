@@ -32,6 +32,11 @@ export const companyApi = {
   getCategories: () => api.get('/company/categories'),
   createCategory: (data: any) => api.post('/company/categories', data),
   
+  // Logos
+  getLogos: () => api.get('/company/logos'),
+  createLogo: (data: any) => api.post('/company/logos', data),
+  deleteLogo: (id: string) => api.delete(`/company/logos/${id}`),
+  
   // Orders
   getOrders: (params?: any) => api.get('/company/orders', { params }),
   getOrder: (id: string) => api.get(`/company/orders/${id}`),

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet, ActivityIndicator, Text, RefreshControl, ScrollView, TextInput } from 'react-native';
+import { View, FlatList, StyleSheet, ActivityIndicator, Text, RefreshControl, ScrollView, TextInput, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Search, ShoppingBag } from 'lucide-react-native';
 import { catalogApi } from '../../src/api';
@@ -13,6 +13,18 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const displayedProducts = React.useMemo(() => {
+    let filtered = products;
+    if (selectedCategory) {
+      filtered = filtered.filter(p => p.category_id === selectedCategory);
+    }
+    if (search) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    }
+    return filtered;
+  }, [products, search, selectedCategory]);
 
   const fetchData = async () => {
     try {
@@ -50,7 +62,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.screen}>
       <FlatList
-        data={products}
+        data={displayedProducts}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
@@ -88,12 +100,18 @@ export default function HomeScreen() {
             
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories}>
               {categories.map((cat) => (
-                <View key={cat.id} style={styles.categoryItem}>
-                  <View style={styles.categoryIcon}>
+                <TouchableOpacity 
+                  key={cat.id} 
+                  style={styles.categoryItem}
+                  onPress={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+                >
+                  <View style={[styles.categoryIcon, selectedCategory === cat.id && styles.categoryIconActive]}>
                     <Text style={{ fontSize: 28 }}>{cat.icon || '📦'}</Text>
                   </View>
-                  <Text style={styles.categoryName}>{cat.name}</Text>
-                </View>
+                  <Text style={[styles.categoryName, selectedCategory === cat.id && styles.categoryNameActive]}>
+                    {cat.name}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </ScrollView>
             
@@ -208,12 +226,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
     ...SHADOWS.soft,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  categoryIconActive: {
+    borderColor: COLORS.brand.primary,
+    backgroundColor: COLORS.brand.primary + '10',
   },
   categoryName: {
     ...TYPOGRAPHY.body,
     fontSize: 12,
     fontWeight: '700',
     color: COLORS.text.primary,
+  },
+  categoryNameActive: {
+    color: COLORS.brand.primary,
   },
   empty: {
     padding: SPACING.xxl,

@@ -46,10 +46,16 @@ export default function OrdersPage() {
   };
 
   const statusSteps = [
-    { key: 'placed', label: 'Order Placed' },
-    { key: 'processing', label: 'Processing' },
-    { key: 'shipped', label: 'Shipped' },
-    { key: 'out_for_delivery', label: 'Out for Delivery' },
+    { key: 'online_order', label: 'Online Order' },
+    { key: 'advance_pending', label: 'Advance Pending' },
+    { key: 'advance_received', label: 'Advance Received' },
+    { key: 'name_logo_design', label: 'Logo Design' },
+    { key: 'custom_logo_approval', label: 'Custom Logo' },
+    { key: 'cutting_stitching', label: 'Cutting & Stitching' },
+    { key: 'quality_control', label: 'Quality Control' },
+    { key: 'press_pack', label: 'Press & Pack' },
+    { key: 'ready_to_dispatch', label: 'Ready to Dispatch' },
+    { key: 'dispatched', label: 'Dispatched' },
     { key: 'delivered', label: 'Delivered' }
   ];
 
@@ -89,11 +95,16 @@ export default function OrdersPage() {
 
   const getStatusInfo = (status: string) => {
     switch (status) {
-      case 'placed': return { color: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Placed', icon: Clock };
-      case 'confirmed': return { color: 'bg-indigo-50 text-indigo-700 border-indigo-200', label: 'Confirmed', icon: CheckCircle };
-      case 'processing': return { color: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Processing', icon: Clock };
-      case 'shipped': return { color: 'bg-purple-50 text-purple-700 border-purple-200', label: 'Shipped', icon: Truck };
-      case 'out_for_delivery': return { color: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Out for Delivery', icon: Truck };
+      case 'online_order': return { color: 'bg-blue-50 text-blue-700 border-blue-200', label: 'Online Order', icon: Clock };
+      case 'advance_pending': return { color: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Advance Pending', icon: Clock };
+      case 'advance_received': return { color: 'bg-green-50 text-green-700 border-green-200', label: 'Advance Received', icon: CheckCircle };
+      case 'name_logo_design': return { color: 'bg-purple-50 text-purple-700 border-purple-200', label: 'Logo Design', icon: Clock };
+      case 'custom_logo_approval': return { color: 'bg-purple-50 text-purple-700 border-purple-200', label: 'Custom Logo', icon: CheckCircle };
+      case 'cutting_stitching': return { color: 'bg-pink-50 text-pink-700 border-pink-200', label: 'Cutting/Stitching', icon: Clock };
+      case 'quality_control': return { color: 'bg-teal-50 text-teal-700 border-teal-200', label: 'QC', icon: CheckCircle };
+      case 'press_pack': return { color: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Press/Pack', icon: Clock };
+      case 'ready_to_dispatch': return { color: 'bg-cyan-50 text-cyan-700 border-cyan-200', label: 'Ready to Dispatch', icon: CheckCircle };
+      case 'dispatched': return { color: 'bg-purple-50 text-purple-700 border-purple-200', label: 'Dispatched', icon: Truck };
       case 'delivered': return { color: 'bg-green-50 text-green-700 border-green-200', label: 'Delivered', icon: CheckCircle };
       case 'cancelled': return { color: 'bg-red-50 text-red-700 border-red-200', label: 'Cancelled', icon: XCircle };
       default: return { color: 'bg-gray-50 text-gray-700 border-gray-200', label: status, icon: Clock };
@@ -102,7 +113,16 @@ export default function OrdersPage() {
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     try {
-      await companyApi.updateOrderStatus(id, { status: newStatus });
+      let payload: any = { status: newStatus };
+      if (newStatus === 'dispatched') {
+        const method = prompt("Enter dispatch method (shopify, personal_tahir, outside_tcs, shop_jl, shop_jt):", "outside_tcs");
+        if (method) payload.dispatch_method = method;
+      }
+      if (newStatus === 'cancelled') {
+        const remark = prompt("Enter cancellation remark:");
+        if (remark) payload.cancellation_remark = remark;
+      }
+      await companyApi.updateOrderStatus(id, payload);
       fetchOrders();
     } catch (err) {
       console.error(err);
@@ -197,6 +217,21 @@ export default function OrdersPage() {
 
                   <div className="bg-[#EA580C]/5 rounded-xl p-5 border border-[#EA580C]/10">
                     <p className="text-[10px] font-black uppercase tracking-widest text-[#EA580C] mb-4">Order Summary</p>
+                    <div className="space-y-4 mb-4 border-b border-[#EA580C]/10 pb-4">
+                      {trackingOrder.items.map((item: any, idx: number) => (
+                        <div key={idx}>
+                          <p className="text-sm font-bold text-gray-900">{item.quantity}x {item.product_name}</p>
+                          {item.customizations && (
+                            <div className="ml-4 mt-1 border-l-2 border-[#EA580C]/20 pl-2">
+                              {item.customizations.fitting && <p className="text-xs text-gray-600">Fit: {item.customizations.fitting}</p>}
+                              {item.customizations.custom_color && <p className="text-xs text-gray-600">Color: {item.customizations.custom_color}</p>}
+                              {item.customizations.name_on_shirt && <p className="text-xs text-gray-600">Name: {item.customizations.name_on_shirt} ({item.customizations.name_placement})</p>}
+                              {item.customizations.logo && <p className="text-xs text-gray-600">Logo: {item.customizations.logo} ({item.customizations.logo_placement})</p>}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                     <div className="flex justify-between items-end">
                       <div>
                         <p className="text-xs text-gray-500 mb-0.5">Total Amount</p>
@@ -207,11 +242,29 @@ export default function OrdersPage() {
                       </p>
                     </div>
                   </div>
+
+                  {trackingOrder.appointment && (
+                    <div className="bg-blue-50 rounded-xl p-5 border border-blue-100">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-600 mb-4">In-Home Measurement Appointment</p>
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-0.5">Date & Time</p>
+                          <p className="font-bold text-gray-900">{trackingOrder.appointment.date} at {trackingOrder.appointment.time}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500 mb-0.5">Address</p>
+                          <p className="font-medium text-gray-600 text-sm leading-relaxed">
+                            {trackingOrder.shipping_address?.street}, {trackingOrder.shipping_address?.city}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6">Fulfillment Timeline</p>
-                  <div className="relative space-y-0">
+                  <div className="relative space-y-0 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
                     {/* Timeline Line */}
                     <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-gray-100" />
                     
@@ -233,7 +286,7 @@ export default function OrdersPage() {
                         const isFinal = idx === activeSteps.length - 1 && trackingOrder.status === 'delivered';
                         
                         return (
-                          <div key={step.key} className="relative flex gap-4 pb-8 last:pb-0">
+                          <div key={step.key} className="relative flex gap-4 pb-5 last:pb-0">
                             <div className={cn(
                               "w-6 h-6 rounded-full border-4 z-10 flex items-center justify-center transition-all duration-500",
                               isFinal ? "bg-green-500 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.4)]" :
@@ -366,11 +419,16 @@ export default function OrdersPage() {
                             value={order.status}
                             onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
                           >
-                            <option value="placed">Placed</option>
-                            <option value="confirmed">Confirm</option>
-                            <option value="processing">Process</option>
-                            <option value="shipped">Ship</option>
-                            <option value="out_for_delivery">Out for Delivery</option>
+                            <option value="online_order">Online Order</option>
+                            <option value="advance_pending">Advance Pending</option>
+                            <option value="advance_received">Advance Received</option>
+                            <option value="name_logo_design">Logo Design</option>
+                            <option value="custom_logo_approval">Custom Logo</option>
+                            <option value="cutting_stitching">Cutting / Stitching</option>
+                            <option value="quality_control">QC</option>
+                            <option value="press_pack">Press / Pack</option>
+                            <option value="ready_to_dispatch">Ready to Dispatch</option>
+                            <option value="dispatched">Dispatch</option>
                             <option value="delivered">Deliver</option>
                             <option value="cancelled">Cancel</option>
                           </select>

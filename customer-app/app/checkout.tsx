@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Modal, Animated } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Modal, Animated, TouchableOpacity } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { CheckCircle2, CreditCard, Wallet, Truck } from 'lucide-react-native';
 import { useCartStore, useAuthStore } from '../src/store';
@@ -23,6 +23,11 @@ export default function CheckoutScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [orderNum, setOrderNum] = useState('');
 
+  // Measurement Booking
+  const [isBooking, setIsBooking] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState('');
+  const [appointmentTime, setAppointmentTime] = useState('');
+
   const handlePlaceOrder = async () => {
     if (!name || !phone || !street || !city || !state || !zipCode) {
       alert('Please fill in all shipping details');
@@ -31,7 +36,7 @@ export default function CheckoutScreen() {
 
     setLoading(true);
     try {
-      const orderData = {
+      const orderData: any = {
         shipping_address: {
           full_name: name,
           phone: phone,
@@ -44,6 +49,19 @@ export default function CheckoutScreen() {
         payment_method: 'cod',
         note: 'Customer mobile checkout'
       };
+
+      if (isBooking) {
+        if (!appointmentDate || !appointmentTime) {
+          alert('Please enter a date and time for measurement.');
+          setLoading(false);
+          return;
+        }
+        orderData.appointment = {
+          date: appointmentDate,
+          time: appointmentTime,
+          cost: 1500
+        };
+      }
       
       const res = await orderApi.placeOrder(orderData);
       setOrderNum(res.data.order_number);
@@ -96,6 +114,41 @@ export default function CheckoutScreen() {
             <View style={styles.radioActive} />
           </View>
         </View>
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Truck size={20} color={COLORS.brand.primary} />
+            <Text style={styles.cardTitle}>Measurement & Fitting Service</Text>
+          </View>
+          <View style={styles.paymentOption}>
+            <TouchableOpacity 
+              style={{ flex: 1 }} 
+              onPress={() => setIsBooking(false)}
+            >
+              <Text style={styles.paymentName}>Standard Delivery</Text>
+              <Text style={styles.paymentSub}>I ordered my standard size</Text>
+            </TouchableOpacity>
+            <View style={!isBooking ? styles.radioActive : styles.radioInactive} />
+          </View>
+          
+          <View style={[styles.paymentOption, { marginTop: 10 }]}>
+            <TouchableOpacity 
+              style={{ flex: 1 }} 
+              onPress={() => setIsBooking(true)}
+            >
+              <Text style={styles.paymentName}>Book In-Home Measurement (+ Rs. 1500)</Text>
+              <Text style={styles.paymentSub}>Our team will visit you for proper sizing</Text>
+            </TouchableOpacity>
+            <View style={isBooking ? styles.radioActive : styles.radioInactive} />
+          </View>
+
+          {isBooking && (
+            <View style={styles.bookingBox}>
+              <Text style={TYPOGRAPHY.small}>We will use your Shipping Address for the visit.</Text>
+              <Input label="Preferred Date" value={appointmentDate} onChangeText={setAppointmentDate} placeholder="e.g. 26 April 2026" />
+              <Input label="Preferred Time" value={appointmentTime} onChangeText={setAppointmentTime} placeholder="e.g. 3:00 PM" />
+            </View>
+          )}
+        </View>
         
         <View style={[styles.card, styles.summaryCard]}>
           <Text style={styles.cardTitle}>Order Summary</Text>
@@ -104,13 +157,17 @@ export default function CheckoutScreen() {
             <Text style={styles.summaryValue}>Rs. {cart?.subtotal.toLocaleString()}</Text>
           </View>
           <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Service Fees</Text>
+            <Text style={styles.summaryValue}>Rs. {isBooking ? '1,500' : '0'}</Text>
+          </View>
+          <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Shipping</Text>
             <Text style={[styles.summaryValue, { color: '#059669' }]}>Free</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalPrice}>Rs. {cart?.subtotal.toLocaleString()}</Text>
+            <Text style={styles.totalPrice}>Rs. {(cart?.subtotal + (isBooking ? 1500 : 0)).toLocaleString()}</Text>
           </View>
         </View>
       </ScrollView>
@@ -209,6 +266,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 6,
     borderColor: COLORS.brand.primary,
+  },
+  radioInactive: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: COLORS.border.default,
+  },
+  bookingBox: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border.default,
   },
   summaryCard: {
     backgroundColor: '#1A1A1A',

@@ -56,13 +56,20 @@ async def add_item(user_id: str, data: CartItemAdd) -> dict:
     if data.quantity > stock:
         raise HTTPException(status_code=400, detail=f"Only {stock} in stock")
 
+    # Add custom costs
+    if data.customizations:
+        if data.customizations.get("name_on_shirt"):
+            price += 500
+        if data.customizations.get("logo"):
+            price += 1000
+
     await get_or_create_cart(user_id)
     cart = await db.carts.find_one({"user_id": user_id})
     now = datetime.now(timezone.utc)
 
-    # Check if already in cart
+    # Check if already in cart (only group if customizations match EXACTLY)
     for idx, item in enumerate(cart.get("items", [])):
-        if item.get("product_id") == data.product_id and item.get("variant_id") == data.variant_id:
+        if item.get("product_id") == data.product_id and item.get("variant_id") == data.variant_id and item.get("customizations") == data.customizations:
             new_qty = item.get("quantity", 0) + data.quantity
             if new_qty > stock:
                 raise HTTPException(status_code=400, detail=f"Only {stock} in stock")
@@ -73,7 +80,8 @@ async def add_item(user_id: str, data: CartItemAdd) -> dict:
 
     new_item = CartItem(
         product_id=data.product_id, variant_id=data.variant_id, quantity=data.quantity,
-        product_name=name, product_image=img, unit_price=price, variant_label=vlabel, added_at=now,
+        product_name=name, product_image=img, unit_price=price, variant_label=vlabel,
+        customizations=data.customizations, added_at=now,
     )
     await db.carts.update_one({"user_id": user_id}, {"$push": {"items": new_item.model_dump()}, "$set": {"updated_at": now}})
     return await _get_cart(user_id)
