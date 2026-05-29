@@ -8,22 +8,25 @@ export async function POST() {
       'ADMIN', 'MAIN_EMPLOYEE', 'STORE_EMPLOYEE', 'CUTTING_EMPLOYEE', 
       'STITCHING_EMPLOYEE', 'QUALITY_CHECK_EMPLOYEE', 'PRESSING_EMPLOYEE', 'PACKAGING_EMPLOYEE'
     ];
+    const domains = ['enamels.com', 'smartpro.com'];
 
     const password = await bcrypt.hash('pass123', 10);
 
-    for (const role of roles) {
-      const email = `${role.toLowerCase()}@enamels.com`;
-      await prisma.user.upsert({
-        where: { email },
-        update: {},
-        create: {
-          email,
-          password,
-          name: `${role.replace('_', ' ')}`,
-          role: role as any,
-          employeeId: `EMP-${role.substring(0, 3)}-${Math.floor(Math.random() * 1000)}`
-        }
-      });
+    for (const domain of domains) {
+      for (const role of roles) {
+        const email = `${role.toLowerCase()}@${domain}`;
+        await prisma.user.upsert({
+          where: { email },
+          update: {},
+          create: {
+            email,
+            password,
+            name: role.replace('_', ' '),
+            role: role as any,
+            employeeId: `EMP-${role.substring(0, 3)}-${domain.substring(0, 3).toUpperCase()}-${Math.floor(Math.random() * 1000)}`
+          }
+        });
+      }
     }
 
     return NextResponse.json({ message: 'Users seeded successfully' });
