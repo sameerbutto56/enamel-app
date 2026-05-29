@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "scripts": {
     "install-all": "npm install && cd backend && pip install -r requirements.txt && cd ../dashboard && npm install && cd ../customer-app && npm install",
-    "backend": "cd backend && python -m uvicorn server:app --host 0.0.0.0 --port 8000 --reload",
-    "dashboard": "cd dashboard && npm run dev",
-    "customer": "cd customer-app && npx expo start --web --port 8082 --clear",
-    "start": "npx -y concurrently \"npm run backend\" \"npm run dashboard\" \"npm run customer\" --names \"BACKEND,DASHBOARD,CUSTOMER\" --prefix-colors \"blue,green,magenta\""
+    "backend": "cd EnamelsManufacturing/manufacturing-backend && python -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload",
+    "frontend": "cd EnamelsManufacturing/manufacturing && npm run dev",
+    "start": "npx -y concurrently \"npm run backend\" \"npm run frontend\" --names \"BACK-POSTGRES,FRONT-REACT\" --prefix-colors \"cyan,yellow\""
   }
 }

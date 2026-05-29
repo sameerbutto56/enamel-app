@@ -7,3 +7,6 @@ build/
 .expo/
 *.log
 .env
+*.zip
+_OLD/
+EnamelsManufacturing/
